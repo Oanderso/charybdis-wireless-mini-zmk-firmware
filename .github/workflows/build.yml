@@ -217,7 +217,7 @@ jobs:
       shell: bash
       run: |
         set -euo pipefail
-        f="config/keymaps/${{ matrix.group.keymap }}.keymap"
+        f="config/${{ matrix.group.keymap }}.keymap"
         test -f "$f" || { echo "[ERROR] Missing keymap file: $f"; exit 1; }
         echo "Found $f"
 
@@ -278,7 +278,7 @@ jobs:
         # Copy the selected keymap into the config dir named after the shield.
         # ZMK's cmake finds keymaps by searching for ${shield}.keymap in ZMK_CONFIG.
         if [[ -n "${KM:-}" ]]; then
-          cp "$CONFIG_DIR/keymaps/${KM}.keymap" "$CONFIG_DIR/${TARGET}.keymap"
+          cp "$CONFIG_DIR/${KM}.keymap" "$CONFIG_DIR/${TARGET}.keymap"
         fi
 
         echo "Build vars"
