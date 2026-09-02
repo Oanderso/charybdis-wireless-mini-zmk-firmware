@@ -1,24 +1,92 @@
 #include <input/processors.dtsi>
 #include <dt-bindings/zmk/input_transform.h>
+#include <zephyr/dt-bindings/input/input-event-codes.h>
+#include <behaviors/input_gestures_accel.dtsi>
+
+
+/*
+ * Pointer acceleration settings
+ *
+ * Tuned for the PMW3610 at 500 CPI.
+ */
+&pointer_accel {
+    input-type = <INPUT_EV_REL>;
+    codes = <INPUT_REL_X INPUT_REL_Y>;
+
+    /* Base pointer sensitivity: 1000 = 1.0x */
+    sensitivity = <1000>;
+
+    /* Slow movements: 800 = 0.8x */
+    min-factor = <800>;
+
+    /* Maximum acceleration: 2500 = 2.5x */
+    max-factor = <2500>;
+
+    /* Acceleration begins above this speed */
+    speed-threshold = <400>;
+
+    /* Maximum acceleration reached around this speed */
+    speed-max = <2500>;
+
+    /* 1 = linear, 2 = mild exponential, 3+ = stronger */
+    acceleration-exponent = <2>;
+
+    /* Equal X/Y sensitivity */
+    y-boost = <1000>;
+
+    /* Match the PMW3610 sensor CPI */
+    sensor-dpi = <500>;
+};
+
 
 &trackball_listener {
-    /* Normal pointer movement on all layers */
-    input-processors = <&zip_xy_scaler 5 5>;
 
-    /* SCROLL layer = layer 5 */
+    /*
+     * NORMAL POINTER MOVEMENT
+     *
+     * Slow motion stays precise, while fast rolls accelerate.
+     */
+    input-processors = <
+        &pointer_accel
+    >;
+
+
+    /*
+     * SCROLL layer = layer 5
+     *
+     * Scroll acceleration is disabled.
+     *
+     * Previous effective scaling:
+     *     1/10 × 1/2 = 1/20
+     *
+     * New effective scaling:
+     *     1/12 × 1/2 = 1/24
+     *
+     * This is about 17% slower than before.
+     */
     scroller: scroller {
         layers = <5>;
+
         input-processors = <
-            &zip_xy_scaler 1 10                              // Scales the scroll speed
-            &zip_xy_to_scroll_mapper                         // Converts XY movement to scroll events
+            &zip_xy_scaler 1 12
+            &zip_xy_to_scroll_mapper
             &zip_scroll_scaler 1 2
-            &zip_scroll_transform (INPUT_TRANSFORM_Y_INVERT) // Inverts the scroll direction
+            &zip_scroll_transform (INPUT_TRANSFORM_Y_INVERT)
         >;
     };
 
-    /* SLOW layer = layer 4 */
+
+    /*
+     * SLOW pointer layer = layer 4
+     *
+     * No acceleration here.
+     * Scale movement to roughly one third.
+     */
     slow_pointer: slow_pointer {
         layers = <4>;
-        input-processors = <&zip_xy_scaler 2 6>;
+
+        input-processors = <
+            &zip_xy_scaler 2 6
+        >;
     };
 };
