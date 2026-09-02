@@ -4,6 +4,8 @@ manifest:
       url-base: https://github.com/zmkfirmware
     - name: 280Zo
       url-base: https://github.com/280Zo
+    - name: nuovotaka
+      url-base: https://github.com/nuovotaka
 
   projects:
     - name: zmk
@@ -16,6 +18,10 @@ manifest:
     - name: prospector-zmk-module
       remote: 280Zo
       revision: main
+    - name: zmk-pointing-acceleration-alpha
+      remote: nuovotaka
+      revision: main
 
   self:
     path: config
+
