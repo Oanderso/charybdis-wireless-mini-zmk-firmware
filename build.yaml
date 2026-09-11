@@ -1,19 +1,14 @@
-# Build the Charybdis Mini Bluetooth left and right halves
-# using the single Keymap Editor-managed keymap:
-# config/charybdis.keymap
+# Core-dump diagnostic build for the Charybdis Mini right/central half.
+# Uses the larger nice!nano debug partition so the full Charybdis firmware
+# plus Zephyr coredump support fit while preserving a flash coredump region.
 
 board:
-  - nice_nano//zmk
+  - nice_nano//zmk_debug_extra
 
 include:
-  - name: bt
-    board: nice_nano//zmk
+  - name: coredump-debug
+    board: nice_nano//zmk_debug_extra
     shield:
-      - charybdis_left_bt
       - charybdis_right_bt
     keymap:
       - charybdis
-
-  - name: settings_reset
-    board: nice_nano//zmk
-    shield: settings_reset
