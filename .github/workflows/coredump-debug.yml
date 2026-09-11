@@ -1,0 +1,73 @@
+name: Build Charybdis Core Dump Debug Firmware
+
+on:
+  push:
+    branches:
+      - coredump-debug
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  build-coredump-debug:
+    name: Build right central coredump firmware
+    runs-on: ubuntu-latest
+    container: zmkfirmware/zmk-build-arm:stable
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Initialise West workspace
+        shell: bash
+        run: |
+          set -euxo pipefail
+          west init -l "$GITHUB_WORKSPACE/config"
+          west update
+          west zephyr-export
+          echo "Resolved ZMK and Zephyr revisions:"
+          west list zmk zephyr -f '{name}: {revision} ({path})'
+
+      - name: Prepare Charybdis configuration
+        shell: bash
+        run: |
+          set -euxo pipefail
+          for f in "$GITHUB_WORKSPACE/config/charybdis/"*.conf; do
+            [ -f "$f" ] && cp "$f" "$GITHUB_WORKSPACE/config/$(basename "$f")"
+          done
+          test -f "$GITHUB_WORKSPACE/config/charybdis.keymap"
+          cp "$GITHUB_WORKSPACE/config/charybdis.keymap" \
+             "$GITHUB_WORKSPACE/config/charybdis_right_bt.keymap"
+
+      - name: Build coredump debug firmware
+        shell: bash
+        working-directory: zmk/app
+        run: |
+          set -euxo pipefail
+          west build -p \
+            -d "$GITHUB_WORKSPACE/build-coredump" \
+            -b "nice_nano//zmk_debug_extra" \
+            -- \
+            "-DZMK_CONFIG=$GITHUB_WORKSPACE/config" \
+            "-DZMK_EXTRA_MODULES=$GITHUB_WORKSPACE/boards;$GITHUB_WORKSPACE/zmk-pmw3610-driver;$GITHUB_WORKSPACE/prospector-zmk-module" \
+            "-DSHIELD=charybdis_right_bt" \
+            "-DSNIPPET=studio-rpc-usb-uart"
+
+      - name: Collect diagnostic artifacts
+        shell: bash
+        run: |
+          set -euxo pipefail
+          mkdir -p "$GITHUB_WORKSPACE/coredump-artifacts"
+          cp "$GITHUB_WORKSPACE/build-coredump/zephyr/zmk.uf2" \
+             "$GITHUB_WORKSPACE/coredump-artifacts/charybdis_right_bt-coredump-debug.uf2"
+          cp "$GITHUB_WORKSPACE/build-coredump/zephyr/zmk.elf" \
+             "$GITHUB_WORKSPACE/coredump-artifacts/charybdis_right_bt-coredump-debug.elf"
+          cp "$GITHUB_WORKSPACE/build-coredump/zephyr/.config" \
+             "$GITHUB_WORKSPACE/coredump-artifacts/charybdis_right_bt-coredump-debug.config"
+
+      - name: Upload coredump debug bundle
+        uses: actions/upload-artifact@v7
+        with:
+          name: charybdis-coredump-debug
+          path: coredump-artifacts/
