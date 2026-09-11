@@ -1,0 +1,14 @@
+/* USB CDC ACM console for the diagnostic right-half build. */
+
+/ {
+    chosen {
+        zephyr,console = &zmk_usb_logging_debug_uart;
+        zephyr,shell-uart = &zmk_usb_logging_debug_uart;
+    };
+};
+
+&zephyr_udc0 {
+    zmk_usb_logging_debug_uart: zmk_usb_logging_debug_uart {
+        compatible = "zephyr,cdc-acm-uart";
+    };
+};
