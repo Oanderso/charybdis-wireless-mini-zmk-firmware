@@ -1,3 +1,4 @@
+# Dedicated coredump diagnostic workflow for the Charybdis right/central half.
 name: Build Charybdis Core Dump Debug Firmware
 
 on:
