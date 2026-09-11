@@ -24,4 +24,7 @@ include:
       - charybdis_right_bt
     keymap:
       - charybdis
-    snippet: zmk-usb-logging
+    extra_conf_files:
+      - zmk-usb-logging-debug.conf
+    extra_dtc_overlay_files:
+      - zmk-usb-logging-debug.overlay
